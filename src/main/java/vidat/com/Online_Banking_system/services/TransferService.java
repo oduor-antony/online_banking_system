@@ -11,35 +11,29 @@ import vidat.com.Online_Banking_system.entities.Account;
 import vidat.com.Online_Banking_system.entities.Transfer;
 import vidat.com.Online_Banking_system.repositories.AccountRepository;
 import vidat.com.Online_Banking_system.repositories.TransferRepository;
-
 import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-
     private final TransferRepository transferRepository;
     private final AccountRepository accountRepository;
-
     @Transactional
     public TransferResponse transfer(String username, TransferRequest request) {
         BigDecimal amount = request.getAmount();
         Long fromId = request.getFromAccountId();
         Long toId = request.getToAccountId();
-
         if (amount == null || amount.signum() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Amount must be greater than zero");
         }
         if (fromId.equals(toId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer to the same account");
         }
-
         // Lock in a fixed order (lowest id first) so opposite transfers can't deadlock
         Account first = lockAccount(Math.min(fromId, toId));
         Account second = lockAccount(Math.max(fromId, toId));
         Account from = fromId.equals(first.getId()) ? first : second;
         Account to = toId.equals(first.getId()) ? first : second;
-
 //        if (!from.getUsers().getUserName().equals(username)) {
 //            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own the source account");
 //        }
@@ -51,11 +45,9 @@ public class TransferService {
         }
         from.debit(amount);
         to.credit(amount);
-
         Transfer saved = transferRepository.save(Transfer.completed(from, to, amount));
         return TransferResponse.from(saved, from);
     }
-
     private Account lockAccount(Long id) {
         return accountRepository.findByIdForUpdate(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account " + id + " not found"));
