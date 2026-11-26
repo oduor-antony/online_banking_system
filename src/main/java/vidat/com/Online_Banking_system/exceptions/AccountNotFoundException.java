@@ -1,7 +1,7 @@
 package vidat.com.Online_Banking_system.exceptions;
 
 public class AccountNotFoundException extends RuntimeException{
-     AccountNotFoundException(String message){
+     public AccountNotFoundException(String message){
          super(message);
      }
 }

@@ -46,4 +46,14 @@ public class Transfer {
         t.status=Status.COMPLETED;
         return t;
     }
+
+    public static Transfer failed(Account from, Account to, BigDecimal amount, String reason) {
+        Transfer t = new Transfer();
+        t.fromAccount = from;
+        t.toAccount = to;
+        t.amount = amount;
+        t.status = Status.FAILED;
+        t.failure_reason = reason;
+        return t;
+    }
 }

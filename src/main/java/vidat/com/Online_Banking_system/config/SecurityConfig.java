@@ -1,5 +1,6 @@
 package vidat.com.Online_Banking_system.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final JsonAuthEntryPoint jsonAuthEntryPoint;
+    private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtFilter){
         return   http.csrf(csrf -> csrf.disable())
@@ -28,7 +32,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
 
                 )
-                    // temporary, until the JWT filter exists
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(jsonAuthEntryPoint)
+                        .accessDeniedHandler(jsonAccessDeniedHandler))
+
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
