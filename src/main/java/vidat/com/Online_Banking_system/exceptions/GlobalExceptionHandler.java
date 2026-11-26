@@ -46,6 +46,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleBadLogin(Exception ex) {
         return error(HttpStatus.UNAUTHORIZED, "Invalid username or password");
     }
+    // 409 (optimistic/pessimistic lock conflict after retries)
+    @ExceptionHandler(org.springframework.dao.ConcurrencyFailureException.class)
+    public ResponseEntity<Map<String, String>> handleConcurrency(Exception ex) {
+        return error(HttpStatus.CONFLICT, "The account was modified concurrently, please retry");
+    }
 
     // 403 (ownership check in the service layer)
     @ExceptionHandler(AccessDeniedException.class)
